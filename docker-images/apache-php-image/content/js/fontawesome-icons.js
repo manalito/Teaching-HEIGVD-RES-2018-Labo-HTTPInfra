@@ -1,17 +1,17 @@
 $(function(){
 
-	console.log("Loading students");
+	console.log("Loading random fontawesome icons");
 	
-	function loadStudents() {
+	function loadIcons() {
 		$.getJSON( "/api/students/", function( students ) {
 			console.log(students);
 			var message = "Nobody is here";
 			if( students.length > 0 ){
 				message = students[0].firstName + " " + students[0].lastName;
 			}
-			$(".font-weight-light").text(message);
+			$(".font-weight-light").(message);
 		});
 	};
-	loadStudents();
-	setInterval(loadStudents, 2000);
+	loadIcons();
+	setInterval(loadIcons, 3500);
 });
