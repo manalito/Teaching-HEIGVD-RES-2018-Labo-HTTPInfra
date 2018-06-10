@@ -1,42 +1,45 @@
 var Chance = require('chance');
 var chance = new Chance;
 
+var fontAwesomeList = require('font-awesome-list');
+
 var express = require('express');
 var app = express();
 
+// Get all the fontAwesome Icons
+const allIcons = fontAwesomeList.all();
+
+
 app.get('/', function(req, res){
-	res.send(generateStudents());
+	res.send(getRandomFontIcons());
 });
 
 app.listen(3000, function(req, res){
 	console.log('Accepting HTTP requests on port 3000.');
 });
 
-function generateStudents() {
-	var numberOfStudents = chance.integer({
-		min: 0,
-		max: 10
+function getRandomFontIcons() {
+	var numberOfIcons = chance.integer({
+		min: 3,
+		max: 8
 	});
-	console.log(numberOfStudents);
-	var students = [];
-	for(var i = 0; i < numberOfStudents; ++i){
-		var gender = chance.gender();
-		var birthYear = chance.year({
-			min: 1986,
-			max: 1996
-		});
+	console.log(numberOfIcons);
+	var fontAwesomeIcons = [];
+	for(var i = 0; i < numberOfIcons; ++i){
+        // Getting a random icon
+        var icon = allIcons[chance.integer({
+            min: 0,
+            max: allIcons.length - 1 
+        })];
 
-		students.push({
-			firstName: chance.first({
-				gender: gender
-			}),
-			lastName: chance.last(),
-			gender: gender,
-			birthday: chance.birthday({
-				year: birthYear
-			})
+        // Get icon informations
+		fontAwesomeIcons.push({
+			id: icon.id,
+			name: icon.name,
+			categories: icon.categories,
+			unicode: icon.unicode
 		});
 	};
-	console.log(students);
-	return students;
+	console.log(fontAwesomeIcons);
+	return fontAwesomeIcons;
 }
