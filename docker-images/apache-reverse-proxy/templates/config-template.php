@@ -1,18 +1,58 @@
 <?php 
-	$static_app = getenv('STATIC_APP');
-	$dynamic_app = getenv('DYNAMIC_APP');
+	$static_app1= getenv('STATIC_APP1');
+	$static_app2 = getenv('STATIC_APP2');
+	$static_app3 = getenv('STATIC_APP3');
+	$dynamic_app1 = getenv('DYNAMIC_APP1');
+	$dynamic_app2 = getenv('DYNAMIC_APP2');
 ?>
 
-<Virtualhost *:80>
-	ServerName http-reslab.ch
+<VirtualHost *:80>
+        ProxyRequests off
 
-	#ErrorLog
-	#CustomLog
+        ServerName http-reslab.ch
+        ServerAlias www.http-reslab.ch
 
-	ProxyPass '/api/font-icons/' 'http://<?php print "$dynamic_app"?>/'
-	ProxyPassReverse '/api/font-icons/' 'http://<?php print "$dynamic_app"?>/'
+        <Proxy balancer://dynamic-cluster>
+                # WebHead1
+                BalancerMember 'http://<?php print "$dynamic_app1"?>'
+                # WebHead2
+                BalancerMember 'http://<?php print "$dynamic_app2"?>'
 
-	ProxyPass '/' 'http://<?php print "$static_app"?>/'
-	ProxyPassReverse '/' 'http://<?php print "$static_app"?>/'
+                # Security "technically we aren't blocking
+                # anyone but this is the place to make
+                # those changes.
+                Require all granted
 
+                # Load Balancer Settings
+                # We will be configuring a simple Round
+                # Robin style load balancer.  This means
+                # that all webheads take an equal share of
+                # of the load.
+                ProxySet lbmethod=byrequests
+        </Proxy>
+        # Point of Balance dynamic
+        ProxyPass '/api/font-icons/' 'balancer://dynamic-cluster/'
+		ProxyPassReverse '/api/font-icons/' 'balancer://dynamic-cluster/'
+        
+        # We do the same for the static cluster
+        <Proxy balancer://static-cluster>
+                # WebHead1
+                BalancerMember 'http://<?php print "$static_app1"?>'
+                # WebHead2
+                BalancerMember 'http://<?php print "$static_app2"?>'
+                # WebHead3
+                BalancerMember 'http://<?php print "$static_app3"?>'
+
+                # Security "technically we aren't blocking
+                # anyone but this is the place to make
+                # those changes.
+                Require all granted
+
+                # Load Balancer Settings
+                ProxySet lbmethod=byrequests
+        </Proxy>
+        # Point of Balance static
+        ProxyPass  '/' 'balancer://static-cluster/'
+		ProxyPassReverse '/' 'balancer://static-cluster/' 
+  
 </VirtualHost>
