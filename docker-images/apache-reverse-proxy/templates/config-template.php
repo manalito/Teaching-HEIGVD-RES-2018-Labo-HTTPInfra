@@ -9,12 +9,10 @@
 	#ErrorLog
 	#CustomLog
 
-	ProxyPass '/api/students/' 'http://<?php print "$dynamic_app"?>/'
-	ProxyPassReverse '/api/students/' 'http://<?php print "$dynamic_app"?>/'
+	ProxyPass '/api/font-icons/' 'http://<?php print "$dynamic_app"?>/'
+	ProxyPassReverse '/api/font-icons/' 'http://<?php print "$dynamic_app"?>/'
 
 	ProxyPass '/' 'http://<?php print "$static_app"?>/'
-	ProxyPassReverse '/' 'http://1<?php print "$static_app"?>/'
+	ProxyPassReverse '/' 'http://<?php print "$static_app"?>/'
 
 </VirtualHost>
-
-<?php print "hello $ip_address"?>
