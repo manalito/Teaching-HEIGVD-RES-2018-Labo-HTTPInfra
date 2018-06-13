@@ -12,6 +12,12 @@
         ServerName http-reslab.ch
         ServerAlias www.http-reslab.ch
 
+        <Location /balancer-manager>
+                SetHandler balancer-manager
+        </Location>
+
+        ProxyPass /balancer-manager !
+
         <Proxy balancer://dynamic-cluster>
                 # WebHead1
                 BalancerMember 'http://<?php print "$dynamic_app1"?>'
@@ -32,7 +38,7 @@
         </Proxy>
         # Point of Balance dynamic
         ProxyPass '/api/font-icons/' 'balancer://dynamic-cluster/'
-		ProxyPassReverse '/api/font-icons/' 'balancer://dynamic-cluster/'
+	ProxyPassReverse '/api/font-icons/' 'balancer://dynamic-cluster/'
         
         # We do the same for the static cluster
         <Proxy balancer://static-cluster>
@@ -46,13 +52,17 @@
                 # Security "technically we aren't blocking
                 # anyone but this is the place to make
                 # those changes.
-                Require all granted
+                Require all Granted
 
                 # Load Balancer Settings
                 ProxySet lbmethod=byrequests
         </Proxy>
         # Point of Balance static
         ProxyPass  '/' 'balancer://static-cluster/'
-		ProxyPassReverse '/' 'balancer://static-cluster/' 
+	ProxyPassReverse '/' 'balancer://static-cluster/' 
+
+        
+
+        
   
 </VirtualHost>
