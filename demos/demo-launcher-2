@@ -1,0 +1,21 @@
+#!/bin/bash
+# Launching script for demo 2 of HTTP-infra lab
+
+# To start, we kill and remove all docker containers in order to avoid conflicts
+
+docker kill $(docker ps -q)
+docker rm $(docker ps -a -q)
+
+# Then, we build our docker image
+
+echo "Building docker containers"
+
+docker build -t res/apache_php ../docker-images/apache-php-image/.
+docker build -t res/express_dynamic ../docker-images/express-image/.
+
+# And finally, we run our docker containers with according port mapping
+
+echo "Launching docker containers"
+
+docker run -d -p 8080:80 --name apache-static res/apache_php
+docker run -d -p 3000:3000 --name express-dynamic res/express_dynamic

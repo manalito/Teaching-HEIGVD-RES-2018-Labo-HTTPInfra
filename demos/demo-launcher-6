@@ -1,0 +1,27 @@
+#!/bin/bash
+# Launching script for demo 5 of HTTP-infra lab
+
+# To start, we kill and remove all docker containers in order to avoid conflicts
+
+docker kill $(docker ps -q)
+docker rm $(docker ps -a -q)
+
+# Then, we build our docker image
+
+echo "Building docker containers"
+
+docker build -t res/apache_php ../docker-images/apache-php-image/.
+docker build -t res/express_dynamic ../docker-images/express-image/.
+docker build -t res/apache_rp ../docker-images/apache-reverse-proxy/.
+
+# And finally, we run our docker with a port mapping from 8080 to 80
+
+echo "Launching docker containers"
+
+docker run -d --name apache-static1 res/apache_php
+docker run -d --name apache-static2 res/apache_php
+docker run -d --name apache-static3 res/apache_php
+docker run -d --name express-dynamic1 res/express_dynamic
+docker run -d --name express-dynamic2 res/express_dynamic
+docker run -d -e STATIC_APP1=172.17.0.2:80 -e STATIC_APP2=172.17.0.3:80 -e STATIC_APP3=172.17.0.4:80 \
+-e DYNAMIC_APP1=172.17.0.5:3000 -e DYNAMIC_APP2=172.17.0.6:3000 --name apache-reverse-proxy -p 8080:80 res/apache_rp

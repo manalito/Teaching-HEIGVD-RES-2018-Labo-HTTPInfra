@@ -196,12 +196,37 @@ In order to do this we will use a particular option of the command `docker run`:
 It allows us to set environment variables that will then be used in the apache proxy configuration. 
 
 
+
+
 	$ docker run -d -e STATIC_APP=172.17.0.2:80 -e DYNAMIC_APP=172.17.0.3:3000 res/apache_rp
 	
 	
-	find . -type d | xargs chmod 755
-	find . -type f | xargs chmod 644
+We created a php script that allows use to read the environment variables and write the config with the right ip address.
+
+Here is the command that write the configuration in the right file. This is done before starting `apache2` in the script **apache2-foreground**:
+
+	php /var/apache2/templates/config-template.php > /etc/apache2/sites-available/001-reverse-proxy.conf
 	
+```php
+<?php 
+	$static_app = getenv('STATIC_APP');
+	$dynamic_app = getenv('DYNAMIC_APP');
+?>
+
+<Virtualhost *:80>
+	ServerName http-reslab.ch
+
+	#ErrorLog
+	#CustomLog
+
+	ProxyPass '/api/font-icons/' 'http://<?php print "$dynamic_app"?>/'
+	ProxyPassReverse '/api/font-icons/' 'http://<?php print "$dynamic_app"?>/'
+
+	ProxyPass '/' 'http://<?php print "$static_app"?>/'
+	ProxyPassReverse '/' 'http://<?php print "$static_app"?>/'
+
+</VirtualHost>
+```
 
 ### Load balancing: multiple server nodes ( Part 6)
 
@@ -212,7 +237,53 @@ On a true website infrastructure, this will allows us to avoid overloading of a 
 
 source: https://support.rackspace.com/how-to/simple-load-balancing-with-apache/
 
+As you can see here is the declaration of the load balancer for the static container.
+We start by defining the load-balancer members with `BalanceMember`
+Then we set the way to balance the requests:
+
+	ProxySet lbmethod=byrequests
+Then we set with `ProxyPass` and `ProxyPassReverse`, the path to access the load-balancer.
+
+	# Definition of the load balancer
+	 <Proxy balancer://static-cluster>
+                # WebHead1
+                BalancerMember 'http://<?php print "$static_app1"?>'
+                # WebHead2
+                BalancerMember 'http://<?php print "$static_app2"?>'
+                # WebHead3
+                BalancerMember 'http://<?php print "$static_app3"?>'
+
+                Require all Granted
+
+                # Load Balancer Settings
+                ProxySet lbmethod=byrequests
+        </Proxy>
+        # Point of Balance static
+        ProxyPass  '/' 'balancer://static-cluster/'
+        ProxyPassReverse '/' 'balancer://static-cluster/'
+        
+        
+By defining the location of the balancer, we can access the UI interface to see the load-balancers status. Configuration can be set through this UI without restarting apache.
+
+	<Location /balancer-manager>
+                SetHandler balancer-manager
+    </Location>
+
+	ProxyPass /balancer-manager !
+
 ### Management UI
+
+For the management UI of our dockers, we decided to use `Portainer`. This is a nice GUI that allows kill, start stop, restart our docker and access easily to detailed informations.
+
+To run this container, we type the following commands:
+
+	docker volume create portainer_data
+
+	docker run -d -p 9000:9000 --name portainer --restart always -v /var/run/docker.sock:/var/run/docker.sock -v portainer_data:/data portainer/portainer
+
+
+
+	
 
 
 	
