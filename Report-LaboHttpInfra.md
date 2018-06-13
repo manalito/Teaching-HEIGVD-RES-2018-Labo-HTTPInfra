@@ -203,9 +203,16 @@ It allows us to set environment variables that will then be used in the apache p
 	find . -type f | xargs chmod 644
 	
 
-### Part 6: Load balancing: multiple server nodes
+### Load balancing: multiple server nodes ( Part 6)
 
-The load-balancer 
+The load-balancer will allows to spread the load when we have multiple docker instances of a same website.
+We will do this with 3 static docker container and 2 dynamic containers.
+
+On a true website infrastructure, this will allows us to avoid overloading of a server because it shares equally the load between all the members of a load-balancer.
 
 source: https://support.rackspace.com/how-to/simple-load-balancing-with-apache/
+
+### Management UI
+
+
 	
